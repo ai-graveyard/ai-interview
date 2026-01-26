@@ -1,65 +1,153 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useCallback } from 'react';
+import { FileSearch } from 'lucide-react';
+import { PDFUpload } from '@/components/pdf-upload';
+import { PDFViewer } from '@/components/pdf-viewer';
+import { APISettings } from '@/components/api-settings';
+import { AnalysisPanel } from '@/components/analysis-panel';
+import { useApiSettings } from '@/hooks/use-api-settings';
+import { parsePDF, ParsedPDF } from '@/lib/pdf-parser';
+
+type ExpandedPanel = 'none' | 'left' | 'right';
 
 export default function Home() {
+  const { config, isLoaded, isConfigValid, saveConfig } = useApiSettings();
+  const [pdfData, setPdfData] = useState<ParsedPDF | null>(null);
+  const [fileName, setFileName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [expandedPanel, setExpandedPanel] = useState<ExpandedPanel>('none');
+
+  const handleFileSelect = useCallback(async (file: File) => {
+    setIsLoading(true);
+    setParseError(null);
+    setFileName(file.name);
+
+    try {
+      const parsed = await parsePDF(file);
+      setPdfData(parsed);
+    } catch (error) {
+      console.error('PDF parse error:', error);
+      setParseError('PDF 解析失败，请确保文件格式正确');
+      setPdfData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleExpandLeft = () => {
+    setExpandedPanel(expandedPanel === 'left' ? 'none' : 'left');
+  };
+
+  const handleExpandRight = () => {
+    setExpandedPanel(expandedPanel === 'right' ? 'none' : 'right');
+  };
+
+  // 等待 API 配置加载完成
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">加载中...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex min-h-screen flex-col bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <FileSearch className="h-6 w-6 text-primary" />
+            <h1 className="text-lg font-semibold">AI Interview - 智能面试助手</h1>
+          </div>
+          <APISettings
+            config={config}
+            onSave={saveConfig}
+            isConfigValid={isConfigValid}
+            defaultOpen={!isConfigValid}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto flex-1 px-4 py-6">
+        {!pdfData ? (
+          // 上传界面
+          <div className="mx-auto max-w-2xl space-y-6">
+            <div className="space-y-2 text-center">
+              <h2 className="text-2xl font-bold">智能面试助手</h2>
+              <p className="text-muted-foreground">
+                上传您的简历，AI 将从面试者和面试官两个视角为您提供分析
+              </p>
+            </div>
+            <PDFUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
+            {parseError && (
+              <p className="text-center text-sm text-destructive">{parseError}</p>
+            )}
+            {isLoading && (
+              <p className="text-center text-sm text-muted-foreground">
+                正在解析 PDF...
+              </p>
+            )}
+            <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+              <h3 className="font-medium">功能说明</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">面试者视角</p>
+                  <p className="text-xs text-muted-foreground">
+                    分析简历中的不足之处，提供 3-5 条改进建议
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">面试官视角</p>
+                  <p className="text-xs text-muted-foreground">
+                    生成 5-10 个针对性面试问题，帮助您准备面试
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // 分析界面 - 展开/收起
+          <div className="h-[calc(100vh-theme(spacing.14)-theme(spacing.12)-theme(spacing.16))]">
+            <div className="flex h-full gap-4">
+              {/* 左侧：PDF 预览 */}
+              {expandedPanel !== 'right' && (
+                <div className={`h-full transition-all duration-300 ${expandedPanel === 'left' ? 'w-full' : 'w-1/2'}`}>
+                  <PDFViewer 
+                    dataUrl={pdfData.dataUrl} 
+                    fileName={fileName}
+                    isExpanded={expandedPanel === 'left'}
+                    onToggleExpand={handleExpandLeft}
+                  />
+                </div>
+              )}
+              
+              {/* 右侧：分析面板 */}
+              {expandedPanel !== 'left' && (
+                <div className={`h-full transition-all duration-300 ${expandedPanel === 'right' ? 'w-full' : 'w-1/2'}`}>
+                  <AnalysisPanel
+                    resumeText={pdfData.text}
+                    apiConfig={config}
+                    isConfigValid={isConfigValid}
+                    isExpanded={expandedPanel === 'right'}
+                    onToggleExpand={handleExpandRight}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t py-4">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <p>AI Interview - 您的简历数据仅在本地处理，不会上传到服务器</p>
+        </div>
+      </footer>
     </div>
   );
 }
