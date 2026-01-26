@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FileSearch } from 'lucide-react';
+import { FileSearch, Github } from 'lucide-react';
 import { PDFUpload } from '@/components/pdf-upload';
 import { PDFViewer } from '@/components/pdf-viewer';
 import { APISettings } from '@/components/api-settings';
 import { AnalysisPanel } from '@/components/analysis-panel';
 import { useApiSettings } from '@/hooks/use-api-settings';
 import { parsePDF, ParsedPDF } from '@/lib/pdf-parser';
+import { Button } from '@/components/ui/button';
 
 type ExpandedPanel = 'none' | 'left' | 'right';
 
@@ -62,12 +63,30 @@ export default function Home() {
             <FileSearch className="h-6 w-6 text-primary" />
             <h1 className="text-lg font-semibold">AI Interview - 智能面试助手</h1>
           </div>
-          <APISettings
-            config={config}
-            onSave={saveConfig}
-            isConfigValid={isConfigValid}
-            defaultOpen={!isConfigValid}
-          />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              asChild
+            >
+              <a
+                href="https://github.com/ai-graveyard/ai-interview"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="访问 GitHub 仓库"
+              >
+                <Github className="h-4 w-4" />
+                <span className="hidden sm:inline">GitHub</span>
+              </a>
+            </Button>
+            <APISettings
+              config={config}
+              onSave={saveConfig}
+              isConfigValid={isConfigValid}
+              defaultOpen={!isConfigValid}
+            />
+          </div>
         </div>
       </header>
 

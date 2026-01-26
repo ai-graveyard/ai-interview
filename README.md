@@ -2,6 +2,14 @@
 
 一个纯前端的 AI 面试助手工具，支持 PDF 简历上传和预览，提供面试者视角和面试官视角两种分析模式。
 
+## 预览
+
+![Demo 1](.github/demo1.png)
+
+![Demo 2](.github/demo2.png)
+
+[>> 立即试用](https://ai-interview.arxivs.com)
+
 ## 功能特点
 
 - **PDF 简历上传**：支持拖拽上传，自动解析 PDF 文本内容
