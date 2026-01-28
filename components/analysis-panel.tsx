@@ -206,7 +206,7 @@ export function AnalysisPanel({
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="flex h-full flex-col"
+        className="flex flex-1 min-h-0 flex-col"
       >
         {/* Tabs */}
         <div className="shrink-0 px-4 pt-3">
@@ -223,7 +223,7 @@ export function AnalysisPanel({
         </div>
         
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 pb-20">
+        <div className="flex-1 min-h-0 overflow-y-auto px-8 py-4">
           <TabsContent value="interviewee" className="mt-0 h-full">
             <div className="rounded-lg bg-muted/30 p-1 mb-4">
               <p className="text-xs text-muted-foreground text-center">
@@ -231,6 +231,7 @@ export function AnalysisPanel({
               </p>
             </div>
             {activeTab === 'interviewee' && renderContent()}
+            <div className="h-12"></div>
           </TabsContent>
           <TabsContent value="interviewer" className="mt-0 h-full">
             <div className="rounded-lg bg-muted/30 p-1 mb-4">
@@ -239,6 +240,7 @@ export function AnalysisPanel({
               </p>
             </div>
             {activeTab === 'interviewer' && renderContent()}
+            <div className="h-12"></div>
           </TabsContent>
         </div>
       </Tabs>

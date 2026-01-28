@@ -4,6 +4,8 @@ export interface APIConfig {
   baseUrl: string;
   apiKey: string;
   model: string;
+  temperature: number;
+  maxTokens: number;
 }
 
 export interface AnalysisResult {
@@ -42,8 +44,8 @@ export async function analyzeResume(
             content: prompt,
           },
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
+        temperature: config.temperature,
+        max_tokens: config.maxTokens,
       }),
     });
 
@@ -91,6 +93,16 @@ export function validateAPIConfig(config: APIConfig): string | null {
     new URL(config.baseUrl);
   } catch {
     return 'API Base URL 格式不正确';
+  }
+  
+  // 验证 temperature 范围
+  if (config.temperature < 0 || config.temperature > 2) {
+    return 'Temperature 必须在 0 到 2 之间';
+  }
+  
+  // 验证 maxTokens 范围
+  if (config.maxTokens < 1 || !Number.isInteger(config.maxTokens)) {
+    return 'Max Tokens 必须是大于 0 的整数';
   }
   
   return null;

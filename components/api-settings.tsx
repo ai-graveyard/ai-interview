@@ -39,7 +39,7 @@ export function APISettings({ config, onSave, isConfigValid, defaultOpen = false
     setOpen(false);
   };
 
-  const updateField = (field: keyof APIConfig, value: string) => {
+  const updateField = (field: keyof APIConfig, value: string | number) => {
     setLocalConfig((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -113,6 +113,38 @@ export function APISettings({ config, onSave, isConfigValid, defaultOpen = false
             />
             <p className="text-xs text-muted-foreground">
               使用的模型名称，例如 gpt-5.2-mini、claude-4.5-sonnet 等
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="temperature">Temperature: {localConfig.temperature}</Label>
+            <Input
+              id="temperature"
+              type="range"
+              min="0"
+              max="2"
+              step="0.1"
+              value={localConfig.temperature}
+              onChange={(e) => updateField('temperature', parseFloat(e.target.value))}
+              className="cursor-pointer"
+            />
+            <p className="text-xs text-muted-foreground">
+              控制输出的随机性，值越高回答越有创意，值越低回答越稳定（推荐 0.7）
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxTokens">Max Tokens</Label>
+            <Input
+              id="maxTokens"
+              type="number"
+              min="256"
+              max="128000"
+              step="256"
+              placeholder="4096"
+              value={localConfig.maxTokens}
+              onChange={(e) => updateField('maxTokens', parseInt(e.target.value) || 4096)}
+            />
+            <p className="text-xs text-muted-foreground">
+              最大输出 token 数量，根据模型支持的上限设置（默认 4096）
             </p>
           </div>
         </div>

@@ -9,6 +9,8 @@ const DEFAULT_CONFIG: APIConfig = {
   baseUrl: 'https://api.openai.com/v1',
   apiKey: '',
   model: 'gpt-5.2-mini',
+  temperature: 0.7,
+  maxTokens: 4096,
 };
 
 export function useApiSettings() {
@@ -40,7 +42,7 @@ export function useApiSettings() {
   }, []);
 
   // 更新单个字段
-  const updateField = useCallback((field: keyof APIConfig, value: string) => {
+  const updateField = useCallback((field: keyof APIConfig, value: string | number) => {
     setConfig((prev) => {
       const newConfig = { ...prev, [field]: value };
       try {
